@@ -2,17 +2,18 @@ import numpy as np
 import torch
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.utils.structures.game_data_struct import GameTickPacket
-from rlgym_compat import GameState
+from rlgym_compat.common_values import BLUE_TEAM, ORANGE_TEAM
+from rlgym_compat.game_state import GameState, PlayerData, PhysicsObject
 
 from agent import Agent
-from your_obs import YourOBS
+from obs import DefaultObs
 
-class RLGymPPOBot(BaseAgent):
+class ExampleBot(BaseAgent):
 	def __init__(self, name, team, index):
 		super().__init__(name, team, index)
-		self.obs_builder = YourOBS()
+		self.obs_builder = DefaultObs()
 		self.agent = Agent()
-		self.tick_skip = your_tick_skip_here
+		self.tick_skip = 8
 		self.game_state: GameState = None
 		self.controls = None
 		self.action = None
@@ -20,7 +21,7 @@ class RLGymPPOBot(BaseAgent):
 		self.ticks = 0
 		self.prev_time = 0
 		print('====================================')
-		print('RLGym-PPO Bot Ready - Index:', index)
+		print('Example Bot Ready - Index:', index)
 		print('Make sure your FPS is at 120, 240, or 360!')
 		print('====================================')
 
@@ -31,7 +32,7 @@ class RLGymPPOBot(BaseAgent):
 		# Initialize the rlgym GameState object now that the game is active and the info is available
 		self.game_state = GameState(self.get_field_info())
 		self.update_action = True
-		self.ticks = self.tick_skip  # So we take an action the first tick
+		self.ticks = self.tick_skip	 # So we take an action the first tick
 		self.prev_time = 0
 		self.controls = SimpleControllerState()
 		self.action = np.zeros(8)
@@ -54,6 +55,7 @@ class RLGymPPOBot(BaseAgent):
 			
 			obs = self.obs_builder.build_obs(player, self.game_state, self.action)
 			self.action = self.agent.act(obs)
+			self.update_controls(self.action)
 
 		if self.ticks >= self.tick_skip - 1:
 			self.update_controls(self.action)
